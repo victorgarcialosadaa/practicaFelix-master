@@ -14,8 +14,20 @@ import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.stucom.flx.VCTR_DRRN.PlayActivity;
 import com.stucom.flx.VCTR_DRRN.R;
+import com.stucom.flx.VCTR_DRRN.model.MyVolley;
+import com.stucom.flx.VCTR_DRRN.model.Prefs;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class WormyView extends View implements SensorEventListener {
     public static final int SLOW_DOWN = 5;
@@ -28,7 +40,6 @@ public class WormyView extends View implements SensorEventListener {
     private MediaPlayer soundEffects;
     private Bitmap tiles, wormLeft, wormRight, worm;
     private float ax, ay;
-    private TextView tvScoreGame;
 
     public WormyView(Context context) { this(context, null, 0); }
     public WormyView(Context context, AttributeSet attrs) { this(context, attrs, 0); }
@@ -154,9 +165,9 @@ public class WormyView extends View implements SensorEventListener {
         float width = getWidth();
         float height = getHeight();
        // tvScoreGame.setText(0);
+        float scoreLocationY=height/8;
+        float scoreLocationX= width/8;
 
-        float scoreLocationY=height/4;
-        float scoreLocationX= width/4;
 
         //float movementX = -ax * width / 25;
         //float movementY = ay * height / 25;
@@ -194,6 +205,9 @@ public class WormyView extends View implements SensorEventListener {
 
         drawWorm(canvas, left + wormX * TILE_SIZE, top + wormY * TILE_SIZE);
         canvas.drawRect(left, top, right, bottom, paint);
+        paint.setTextSize(50f);
+        canvas.drawText("SCORE: "+ String.valueOf(score),scoreLocationX,scoreLocationY,paint);
+
     }
 
     private int counter = 0;
@@ -211,7 +225,8 @@ public class WormyView extends View implements SensorEventListener {
                 wormX = newX;
                 wormY = newY;
                 if ((map[idx] >= 'C') && (map[idx] <= 'G')) {
-                    // Coin collected!
+                    // Coin collected
+
 
                     soundEffects=MediaPlayer.create(getContext(),R.raw.mariocoin);
                     soundEffects.start();
@@ -233,6 +248,7 @@ public class WormyView extends View implements SensorEventListener {
                     soundEffects.start();
                     playing = false;
                     if (listener != null) listener.gameLost(this);
+                    updateScore();
                 }
             }
         }
@@ -247,7 +263,6 @@ public class WormyView extends View implements SensorEventListener {
         this.ax = sensorEvent.values[0];
         this.ay = sensorEvent.values[1];
         update(-ax*3,ay*3);
-        // float az = sensorEvent.values[2];
 
         // Redraw the view
         this.invalidate();
@@ -261,4 +276,40 @@ public class WormyView extends View implements SensorEventListener {
     public void setWormyListener(WormyListener listener) {
         this.listener = listener;
     }
+    public void updateScore() {
+
+        String URL = "https://api.flx.cat/dam2game/user/score?token=" + Prefs.getInstance(getContext()).getToken();
+        StringRequest request = new StringRequest
+                (Request.Method.POST, URL,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String message = error.toString();
+                        NetworkResponse response = error.networkResponse;
+                        if (response != null) {
+                            Context context = getContext();
+                            CharSequence text = response.statusCode + " " + message;
+                            int duration = Toast.LENGTH_SHORT;
+
+                            Toast toast = Toast.makeText(context, text, duration);
+                            toast.show();
+                        }
+                    }
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("level", String.valueOf(0));
+                params.put("score", String.valueOf(score));
+                return params;
+            }
+        };
+        MyVolley.getInstance(getContext()).add(request);
+    }
+
 }

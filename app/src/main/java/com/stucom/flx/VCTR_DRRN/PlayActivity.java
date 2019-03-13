@@ -41,14 +41,14 @@ public class PlayActivity extends AppCompatActivity {
 
     @Override
     public void onPause() {
-        updateInfo();
+        updateScore();
         // Save player info from SharedPrefs (save changes on name and email only)
         player.setTotalScore(edScore.getText().toString());
         player.setLastLevel(edLevel.getText().toString());
         super.onPause();
     }
 
-    public void updateInfo() {
+    public void updateScore() {
         final String scoreField = edScore.getText().toString();
         final String levelField = edLevel.getText().toString();
 
