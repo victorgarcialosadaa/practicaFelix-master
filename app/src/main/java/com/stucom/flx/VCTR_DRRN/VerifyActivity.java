@@ -44,7 +44,6 @@ public class VerifyActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 /*Esto nos ayudará a comprobar si el código introducido es correcto. Si lo es nos enviará al menu principal*/
                 String URL = "https://api.flx.cat/dam2game/register";
                 StringRequest request = new StringRequest
@@ -68,7 +67,9 @@ public class VerifyActivity extends AppCompatActivity {
                                             Intent intent = new Intent(VerifyActivity.this, MainActivity.class);
                                             startActivity(intent);
                                         } else {
-                                            Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
+                                           /* Intent intent = new Intent(VerifyActivity.this, RegisterActivity.class);
+                                            startActivity(intent);*/
+                                            Intent intent = new Intent(VerifyActivity.this, MainActivity.class);
                                             startActivity(intent);
                                         }
 

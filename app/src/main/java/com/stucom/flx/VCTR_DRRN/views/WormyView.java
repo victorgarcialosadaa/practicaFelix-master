@@ -13,7 +13,6 @@ import android.hardware.SensorEventListener;
 import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
@@ -21,7 +20,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
-import com.stucom.flx.VCTR_DRRN.PlayActivity;
 import com.stucom.flx.VCTR_DRRN.R;
 import com.stucom.flx.VCTR_DRRN.model.MyVolley;
 import com.stucom.flx.VCTR_DRRN.model.Prefs;
@@ -30,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WormyView extends View implements SensorEventListener {
+
     public static final int SLOW_DOWN = 5;
     public static int TILE_SIZE = 48;
     private int nCols, nRows, top, left, bottom, right;
@@ -40,6 +39,11 @@ public class WormyView extends View implements SensorEventListener {
     private MediaPlayer soundEffects;
     private Bitmap tiles, wormLeft, wormRight, worm;
     private float ax, ay;
+    private Bitmap newGameImage;
+    private Bitmap yes;
+    private Bitmap no;
+
+    private boolean gameLost = false;
 
     public WormyView(Context context) { this(context, null, 0); }
     public WormyView(Context context, AttributeSet attrs) { this(context, attrs, 0); }
@@ -53,6 +57,10 @@ public class WormyView extends View implements SensorEventListener {
         tiles = BitmapFactory.decodeResource(getResources(), R.drawable.tiles);
         wormLeft = BitmapFactory.decodeResource(getResources(), R.drawable.worm_left);
         wormRight = BitmapFactory.decodeResource(getResources(), R.drawable.worm_right);
+        newGameImage=BitmapFactory.decodeResource(getResources(), R.drawable.newgame);
+        yes=BitmapFactory.decodeResource(getResources(), R.drawable.yes);
+        no=BitmapFactory.decodeResource(getResources(), R.drawable.no);
+
         worm = wormLeft;
     }
 
@@ -80,6 +88,7 @@ public class WormyView extends View implements SensorEventListener {
         slowdown = SLOW_DOWN;
         score = 0;
         playing = true;
+        gameLost=false;
         resetMap(true);
     }
 
@@ -167,6 +176,10 @@ public class WormyView extends View implements SensorEventListener {
        // tvScoreGame.setText(0);
         float scoreLocationY=height/8;
         float scoreLocationX= width/8;
+        float newGameLocationY=height/2;
+        float newGameLocationX= width/2;
+
+
 
 
         //float movementX = -ax * width / 25;
@@ -174,7 +187,6 @@ public class WormyView extends View implements SensorEventListener {
 
 
         canvas.drawColor(Color.WHITE);
-       // canvas.drawText((String)tvScoreGame.getText(),scoreLocationY,scoreLocationX,paint);
         if (map == null) return;
         int idx = 0, x, y = top;
         for (int i = 0; i < nRows; i++) {
@@ -192,8 +204,7 @@ public class WormyView extends View implements SensorEventListener {
                     case 'P': s = 2; break;
                     case 'Q': s = 21; break;
                     case 'R': s = 25; break;
-                    case 'S': s = 29; break;
-                }
+                    case 'S': s = 29; break; }
                 idx++;
                 drawTile(canvas, s, x, y);
                 x += TILE_SIZE;
@@ -207,11 +218,19 @@ public class WormyView extends View implements SensorEventListener {
         canvas.drawRect(left, top, right, bottom, paint);
         paint.setTextSize(50f);
         canvas.drawText("SCORE: "+ String.valueOf(score),scoreLocationX,scoreLocationY,paint);
+        if (gameLost){
+        //canvas.drawText("NEW GAME? ",newGameLocationX-50,newGameLocationY,paint);
+            canvas.drawBitmap(newGameImage,newGameLocationX-500,newGameLocationY-500,paint);
+            canvas.drawBitmap(yes ,newGameLocationX-500,newGameLocationY+100,paint);
+        canvas.drawBitmap(no,newGameLocationX,newGameLocationY+100,paint);}
+
+        // canvas.drawBitmap(restartGame,scoreLocationX,scoreLocationY,paint);
 
     }
 
     private int counter = 0;
     public void update(float accelerationX, float accelerationY) {
+
         if (!playing) return;
         if (++counter == slowdown) {
             counter = 0;
@@ -246,14 +265,27 @@ public class WormyView extends View implements SensorEventListener {
 
                     soundEffects=MediaPlayer.create(getContext(),R.raw.deathsound);
                     soundEffects.start();
+
                     playing = false;
                     if (listener != null) listener.gameLost(this);
+                    gameLost= true;
                     updateScore();
                 }
             }
         }
         this.invalidate();
     }
+
+    //public void hideNewGame(View view) {
+        //TextView txtView =
+        //Toggle
+      //  if (txtView.getVisibility() == View.VISIBLE)
+            //txtView.setVisibility(View.INVISIBLE);
+        //else
+          //  txtView.setVisibility(View.VISIBLE);
+        //If you want it only one time
+        //txtView.setVisibility(View.VISIBLE);
+    //}
 
     @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {
         update(-ax,ay);
@@ -277,7 +309,6 @@ public class WormyView extends View implements SensorEventListener {
         this.listener = listener;
     }
     public void updateScore() {
-
         String URL = "https://api.flx.cat/dam2game/user/score?token=" + Prefs.getInstance(getContext()).getToken();
         StringRequest request = new StringRequest
                 (Request.Method.POST, URL,

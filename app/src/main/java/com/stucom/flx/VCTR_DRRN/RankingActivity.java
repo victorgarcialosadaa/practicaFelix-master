@@ -34,6 +34,7 @@ import java.util.List;
 
 public class RankingActivity extends AppCompatActivity {
     TextView textView;
+
     RecyclerView recyclerView;
     SwipeRefreshLayout swipeRefreshLayout;
 
@@ -81,7 +82,8 @@ public class RankingActivity extends AppCompatActivity {
 
                         String message = "Downloaded " + players.size() + " players\n";
                         for (Player player : players) {
-                            message += player.getImage() + player.getName() +  "\n";
+                            message += player.getImage() + player.getName() +  "\n"
+                            + "score: "+ player.getLastScore();
                         }
                         //textView.setText(message);
                         swipeRefreshLayout.setRefreshing(false);
@@ -107,11 +109,14 @@ public class RankingActivity extends AppCompatActivity {
     class PlayersViewHolder extends RecyclerView.ViewHolder {
 
         TextView textView;
+        TextView textViewScore;
         ImageView imageView;
 
         PlayersViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.rankingTextView);
+            textViewScore = itemView.findViewById(R.id.rankingTextViewScore);
+
             imageView = itemView.findViewById(R.id.imageView);
         }
     }
@@ -136,6 +141,7 @@ public class RankingActivity extends AppCompatActivity {
             Player player = players.get(position);
             player.getImageAPI();
             viewHolder.textView.setText(player.getName());
+            viewHolder.textViewScore.setText(player.getLastScore());
             Picasso.get().load(player.getImage()).into(viewHolder.imageView);
         }
         @Override

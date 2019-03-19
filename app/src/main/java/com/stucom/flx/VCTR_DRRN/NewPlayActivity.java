@@ -29,7 +29,7 @@ public class NewPlayActivity extends AppCompatActivity implements WormyView.Worm
         setContentView(R.layout.activity_newplay);
         wormyView = findViewById(R.id.wormyView);
         Button btnNewGame = findViewById(R.id.btnNewGame);
-        tvScore = findViewById(R.id.tvScore);
+        //tvScore = findViewById(R.id.tvScore);
       mp= MediaPlayer.create(NewPlayActivity.this, R.raw.music2);
         mp.start();
 
@@ -42,7 +42,6 @@ public class NewPlayActivity extends AppCompatActivity implements WormyView.Worm
         btnNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tvScore.setText("0");
                 wormyView.newGame();
             }
         });
@@ -62,7 +61,7 @@ public class NewPlayActivity extends AppCompatActivity implements WormyView.Worm
 
     @Override
     public void scoreUpdated(View view, int score) {
-        tvScore.setText(String.valueOf(score));
+      //  tvScore.setText(String.valueOf(score));
     }
 
     @Override
